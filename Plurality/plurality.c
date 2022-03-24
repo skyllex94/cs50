@@ -10,8 +10,7 @@ typedef struct
 {
     string name;
     int votes;
-}
-candidate;
+} candidate;
 
 // Array of candidates
 candidate candidates[MAX];
@@ -85,6 +84,7 @@ void print_winner(void)
 {
     string winnerName = "";
 
+    // Bubble sorting system for each user given
     for (int v = 0; v < candidate_count; v++)
     {
         for (int i = 0; i < candidate_count - 1; i++)
@@ -103,10 +103,10 @@ void print_winner(void)
         }
     }
 
-    // for (int j = 0; j < candidate_count; j++)
-    // {
-    //     printf("%s - %i\n", candidates[j].name, candidates[j].votes);
-    // }
+    for (int j = 0; j < candidate_count; j++)
+    {
+        printf("%s - %i\n", candidates[j].name, candidates[j].votes);
+    }
 
     if (candidates[candidate_count - 2].votes == candidates[candidate_count - 1].votes)
     {
