@@ -82,47 +82,40 @@ bool vote(string name)
 // Print the winner (or winners) of the election
 void print_winner(void)
 {
-    string winnerName = "";
+    int winning_vote = 0;
 
-    // Bubble sorting system for each user given
-    for (int v = 0; v < candidate_count; v++)
+    for (int i = 0; i < candidate_count; i++)
     {
-        for (int i = 0; i < candidate_count - 1; i++)
+        if (candidates[i].votes > winning_vote)
         {
-            if (candidates[i].votes > candidates[i + 1].votes)
-            {
-                string swap_name = candidates[i + 1].name;
-                int swap_votes = candidates[i + 1].votes;
-
-                candidates[i + 1] = candidates[i];
-                candidates[i].name = swap_name;
-                candidates[i].votes = swap_votes;
-
-                // winnerName = candidates[i + 1].name;
-            }
+            winning_vote = candidates[i].votes;
         }
     }
 
-    for (int j = 0; j < candidate_count; j++)
+    for (int i = 0; i < candidate_count; i++)
     {
-        printf("%s - %i\n", candidates[j].name, candidates[j].votes);
-    }
-
-    if (candidates[candidate_count - 2].votes == candidates[candidate_count - 1].votes)
-    {
-        printf("%s\n", candidates[candidate_count - 1].name);
-        printf("%s\n", candidates[candidate_count - 2].name);
-    }
-    else if (candidates[candidate_count - 1].votes > candidates[candidate_count - 2].votes)
-    {
-        printf("%s\n", candidates[candidate_count - 1].name);
-    }
-    else if (candidates[candidate_count - 1].votes == candidates[candidate_count - 2].votes == candidates[candidate_count - 3].votes)
-    {
-        printf("%s\n", candidates[candidate_count - 1].name);
-        printf("%s\n", candidates[candidate_count - 2].name);
-        printf("%s\n", candidates[candidate_count - 3].name);
+        if (winning_vote == candidates[i].votes)
+        {
+            printf("%s\n", candidates[i].name);
+        }
     }
 
     return;
+
+    // Bubbling up Sorting in an ascending order
+    // for (int v = 0; v < candidate_count; v++)
+    // {
+    //     for (int i = 0; i < candidate_count - 1; i++)
+    //     {
+    //         if (candidates[i].votes > candidates[i + 1].votes)
+    //         {
+    //             string swap_name = candidates[i + 1].name;
+    //             int swap_votes = candidates[i + 1].votes;
+
+    //             candidates[i + 1] = candidates[i];
+    //             candidates[i].name = swap_name;
+    //             candidates[i].votes = swap_votes;
+    //         }
+    //     }
+    // }
 }
