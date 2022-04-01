@@ -35,29 +35,20 @@ int main(int argc, char *argv[])
 
     // TODO: Copy header from input file to output file
 
-    uint8_t *header = malloc(HEADER_SIZE);
-    uint16_t *buffer = malloc(sizeof(input));
+    uint8_t header[HEADER_SIZE];
+    uint16_t buffer;
 
-    for (uint8_t i = 0; i < HEADER_SIZE; i++)
-    {
-        fread(&header[i], sizeof(uint8_t), 1, input);
-        // uint16_t buffer = *header;
-        fwrite(&header[i], sizeof(uint8_t), 1, output);
-        // fprintf(output, "This is CS50\n");
-    }
+    fread(header, HEADER_SIZE, 1, input);
+    fwrite(header, HEADER_SIZE, 1, output);
 
     // TODO: Read samples from input file and write updated data to output file
 
-    for (uint16_t i = HEADER_SIZE; i < sizeof(input); i++)
+    while (fread(&buffer, sizeof(uint16_t), 1, input))
     {
-        fread(&buffer[i], sizeof(uint16_t), 1, input);
-        // uint16_t buffer = *header;
-        fwrite(&buffer[i], sizeof(uint16_t), factor, output);
-        // fprintf(output, "This is CS50\n");
+        buffer = buffer * factor;
+        fwrite(&buffer[i], sizeof(uint16_t), 1, output);
     }
 
-    free(buffer);
-    free(header);
     // Close files
     fclose(input);
     fclose(output);
