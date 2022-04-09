@@ -17,7 +17,7 @@ typedef struct node
 } node;
 
 // TODO: Choose number of buckets in hash table
-const unsigned int N = 25;
+const unsigned int N = 5000;
 
 // Hash table
 node *table[N];
@@ -61,7 +61,7 @@ bool load(const char *dictionary)
         // Initialize a string to populate the data with it can be further used
         char dic_word[LENGTH + 1];
         // Scan each word in the dictionary until the end of the file
-        while (fscanf(file, "%c", dic_word) != EOF)
+        while (fscanf(file, "%s", dic_word) != EOF)
         {
             // Allocate memory dynamically for each word using the node struct
             node *current_word = malloc(sizeof(node));
@@ -69,6 +69,7 @@ bool load(const char *dictionary)
             strcpy(current_word->word, dic_word);
             // Hash the current dictionary word
             hash_index = hash(dic_word);
+
             current_word->next = table[hash_index];
             table[hash_index] = current_word;
 
@@ -91,6 +92,7 @@ bool load(const char *dictionary)
             // }
             return true;
         }
+        fclose(file);
     }
     return false;
 }
@@ -108,9 +110,21 @@ unsigned int size(void)
 // Unloads dictionary from memory, returning true if successful, else false
 bool unload()
 {
-    // while (dictionary != NULL)
-    // {
-    //     dictionary->
-    // }
+    node *tmp = NULL;
+    for (int i = 0; i < N; i++)
+    {
+        tmp = table[i];
+        while (tmp)
+        {
+            node *cursor = tmp;
+            tmp = tmp->next;
+            free(cursor);
+        }
+
+        if (i == N - 1 && tmp == NULL)
+        {
+            return true;
+        }
+    }
     return false;
 }
