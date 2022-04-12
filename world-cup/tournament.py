@@ -15,22 +15,24 @@ def main():
         sys.exit("Usage: python tournament.py FILENAME")
 
     teams = []
-    with open("2018m.csv", "r") as file:
-        reader = csv.reader(file)
-        next(reader)
+    with open(sys.argv[1], "r") as file:
+        reader = csv.DictReader(file)
         for row in reader:
-            # team_score = row[0]
-            team = row
-            teams += team
+            team_dict = {"team": row["team"], "rating": int(row["rating"])}
+            teams.append(team_dict)
+            # print(team_dict['rating'])
 
+# TODO: Simulate N tournaments and keep track of win counts
     counts = {}
-    for team in teams.items():
-        # count = teams[team + 1]
-        print(f"{team}: ")
+    for i in range(0, N):
+        torn_winner = simulate_tournament(teams)
+        if torn_winner["team"] in counts:
+            counts[torn_winner["team"]] += 1
+        else:
+            counts[torn_winner["team"]] = 1
+    # print(counts)
 
-    # TODO: Simulate N tournaments and keep track of win counts
-
-    # Print each team's chances of winning, according to simulation
+    # # Print each team's chances of winning, according to simulation
     for team in sorted(counts, key=lambda team: counts[team], reverse=True):
         print(f"{team}: {counts[team] * 100 / N:.1f}% chance of winning")
 
@@ -59,7 +61,13 @@ def simulate_round(teams):
 
 def simulate_tournament(teams):
     """Simulate a tournament. Return name of winning team."""
-    # TODO
+
+    round_winner = teams
+    for i in range(4):
+        round_winner = simulate_round(round_winner)
+    return round_winner[0]
+
+    # print(f"{round_winner[0]}")
 
 
 if __name__ == "__main__":
