@@ -18,6 +18,8 @@ def main():
     with open(sys.argv[1], "r") as file:
         reader = csv.DictReader(file)
         for row in reader:
+            # Place in a dictionary element keys: teams and rating 
+            # with each team and rating taken from the csv's row
             team_dict = {"team": row["team"], "rating": int(row["rating"])}
             teams.append(team_dict)
             # print(team_dict['rating'])
@@ -62,12 +64,13 @@ def simulate_round(teams):
 def simulate_tournament(teams):
     """Simulate a tournament. Return name of winning team."""
 
-    round_winner = teams
-    for i in range(4):
-        round_winner = simulate_round(round_winner)
+    for i in range(len(teams)):
+        if (len(round_winner) > 1):
+            round_winner = simulate_round(round_winner)
+        else:
+            break
+    # Return the dictionary element with the team and rating of the winner
     return round_winner[0]
-
-    # print(f"{round_winner[0]}")
 
 
 if __name__ == "__main__":
