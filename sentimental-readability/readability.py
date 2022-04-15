@@ -1,23 +1,23 @@
 from cs50 import get_string
-from math import ceil
 
 letter_count, word_count, sentence_count = 0, 1, 0
 
 
 def main():
+    # Adjust the global amounts to keep track
     global letter_count, word_count, sentence_count
     try:
-        text = get_string("Text: ")
+        text = get_string("Enter Text: ")
     except:
         print("Incorrect Text!")
+    # Go through each letter and identify what it is
     for i in text:
         count_letters(i)
     average_letters = float((letter_count / word_count) * 100)
-    # print(f"{average_letters}")
     average_words = float((sentence_count / word_count) * 100)
-    # print(f"{average_words}")
+    # Calculate the grade based on the formula and store it in a float
     liau_formula = (0.0588 * average_letters) - (0.296 * average_words) - 15.8
-    rounded = int(ceil(liau_formula))
+    rounded = round(liau_formula)
     # print(letter_count)
     # print(word_count)
     # print(sentence_count)
@@ -29,16 +29,17 @@ def main():
         print(f"Grade: {rounded}")
 
 
+# Function that takes the currect letter and updates the count
 def count_letters(chr):
     global letter_count, word_count, sentence_count
-    if (ord(chr.lower()) >= 97 and ord(chr.lower()) <= 121):
+    if (chr.isalpha()):
         letter_count += 1
-    elif (ord(chr) == 32):
+    elif (chr.isspace()):
         word_count += 1
     elif (ord(chr) == 33 or ord(chr) == 63 or ord(chr) == 46):
         sentence_count += 1
     else:
-        return 0
+        return
 
 
 if __name__ == "__main__":
