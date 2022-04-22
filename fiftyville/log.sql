@@ -85,3 +85,50 @@ SELECT * FROM people WHERE passport_number IN (SELECT passport_number FROM passe
 SELECT * FROM people WHERE license_plate IN  (SELECT license_plate FROM bakery_security_logs WHERE month = 7 AND day = 28)
 SELECT * FROM people WHERE license_plate IN  (SELECT license_plate FROM bakery_security_logs WHERE month = 7 AND day = 28)
 SELECT * FROM atm_transactions WHERE atm_location = "Leggett Street" AND month = 7 and day = 28
+SELECT * FROM people LEFT JOIN bank_accounts ON people.id = bank_accounts.person_id LEFT JOIN atm_transactions ON bank_accounts.account_number = atm_transactions.account_number WHERE atm_transactions.month = 7 AND atm_transactions.day = 28 AND atm_location = "Leggett Street"
+-- | 395717 | Kenny   | (826) 555-1652 | 9878712108      | 30G67EN       | 28296815       | 395717    | 2014          | 264 | 28296815       | 2021 | 7     | 28  | Leggett Street | withdraw         | 20     |
+-- | 396669 | Iman    | (829) 555-5269 | 7049073643      | L93JTIZ       | 25506511       | 396669    | 2014          | 288 | 25506511       | 2021 | 7     | 28  | Leggett Street | withdraw         | 20     |
+-- | 438727 | Benista | (338) 555-6650 | 9586786673      | 8X428L0       | 81061156       | 438727    | 2018          | 313 | 81061156       | 2021 | 7     | 28  | Leggett Street | withdraw         | 30     |
+-- | 449774 | Taylor  | (286) 555-6063 | 1988161715      | 1106N58       | 76054385       | 449774    | 2015          | 266 | 76054385       | 2021 | 7     | 28  | Leggett Street | withdraw         | 60     |
+-- | 458378 | Brooke  | (122) 555-4581 | 4408372428      | QX4YZN3       | 16153065       | 458378    | 2012          | 269 | 16153065       | 2021 | 7     | 28  | Leggett Street | withdraw         | 80     |
+-- | 467400 | Luca    | (389) 555-5198 | 8496433585      | 4328GD8       | 28500762       | 467400    | 2014          | 246 | 28500762       | 2021 | 7     | 28  | Leggett Street | withdraw         | 48     |
+-- | 514354 | Diana   | (770) 555-1861 | 3592750733      | 322W7JE       | 26013199       | 514354    | 2012          | 336 | 26013199       | 2021 | 7     | 28  | Leggett Street | withdraw         | 35     |
+-- | 686048 | Bruce   | (367) 555-5533 | 5773159633      | 94KL13X       | 49610011       | 686048    | 2010          | 267 | 49610011       | 2021 | 7     | 28  | Leggett Street | withdraw         | 50     |
+-- | 948985 | Kaelyn  | (098) 555-1164 | 8304650265      | I449449       | 86363979       | 948985    | 2010          | 275 | 86363979       | 2021 | 7     | 28  | Leggett Street | deposit          | 10
+-- Trying to find the truth
+SELECT * FROM people LEFT JOIN bank_accounts ON people.id = bank_accounts.person_id LEFT JOIN atm_transactions ON bank_accounts.account_number = atm_transactions.account_number WHERE atm_transactions.month = 7 AND atm_transactions.day = 28 AND atm_location = "Leggett Street" AND license_plate IN (SELECT license_plate FROM bakery_security_logs WHERE month = 7 AND day = 28 AND hour = 10)
+--    id   |  name  |  phone_number  | passport_number | license_plate | account_number | person_id | creation_year | id  | account_number | year | month | day |  atm_location  | transaction_type | amount |
+-- +--------+--------+----------------+-----------------+---------------+----------------+-----------+---------------+-----+----------------+------+-------+-----+----------------+------------------+--------+
+-- | 396669 | Iman   | (829) 555-5269 | 7049073643      | L93JTIZ       | 25506511       | 396669    | 2014          | 288 | 25506511       | 2021 | 7     | 28  | Leggett Street | withdraw         | 20     |
+-- | 449774 | Taylor | (286) 555-6063 | 1988161715      | 1106N58       | 76054385       | 449774    | 2015          | 266 | 76054385       | 2021 | 7     | 28  | Leggett Street | withdraw         | 60     |
+-- | 467400 | Luca   | (389) 555-5198 | 8496433585      | 4328GD8       | 28500762       | 467400    | 2014          | 246 | 28500762       | 2021 | 7     | 28  | Leggett Street | withdraw         | 48     |
+-- | 514354 | Diana  | (770) 555-1861 | 3592750733      | 322W7JE       | 26013199       | 514354    | 2012          | 336 | 26013199       | 2021 | 7     | 28  | Leggett Street | withdraw         | 35     |
+-- | 686048 | Bruce  | (367) 555-5533 | 5773159633      | 94KL13X       | 49610011       | 686048    | 2010          | 267 | 49610011       | 2021 | 7     | 28  | Leggett Street | withdraw         | 50
+-- Including duration of the phone call
+SELECT * FROM people LEFT JOIN bank_accounts ON people.id = bank_accounts.person_id LEFT JOIN atm_transactions ON bank_accounts.account_number = atm_transactions.account_number WHERE atm_transactions.month = 7 AND atm_transactions.day = 28 AND atm_location = "Leggett Street" AND license_plate IN (SELECT license_plate FROM bakery_security_logs WHERE month = 7 AND day = 28 AND hour = 10) AND phone_number IN (SELECT caller FROM phone_calls WHERE duration <= 60)
+--   id   |  name  |  phone_number  | passport_number | license_plate | account_number | person_id | creation_year | id  | account_number | year | month | day |  atm_location  | transaction_type | amount |
++--------+--------+----------------+-----------------+---------------+----------------+-----------+---------------+-----+----------------+------+-------+-----+----------------+------------------+--------+
+-- | 449774 | Taylor | (286) 555-6063 | 1988161715      | 1106N58       | 76054385       | 449774    | 2015          | 266 | 76054385       | 2021 | 7     | 28  | Leggett Street | withdraw         | 60     |
+-- | 514354 | Diana  | (770) 555-1861 | 3592750733      | 322W7JE       | 26013199       | 514354    | 2012          | 336 | 26013199       | 2021 | 7     | 28  | Leggett Street | withdraw         | 35     |
+-- | 686048 | Bruce  | (367) 555-5533 | 5773159633      | 94KL13X       | 49610011       | 686048    | 2010          | 267 | 49610011       | 2021 | 7     | 28  | Leggett Street | withdraw         | 50
+-- Trying to query the flight info as well
+SELECT * FROM people LEFT JOIN bank_accounts ON people.id = bank_accounts.person_id LEFT JOIN atm_transactions ON bank_accounts.account_number = atm_transactions.account_number  WHERE atm_transactions.month = 7 AND atm_transactions.day = 28 AND atm_location = "Leggett Street" AND license_plate IN (SELECT license_plate FROM bakery_security_logs WHERE month = 7 AND day = 28 AND hour = 10) AND phone_number IN (SELECT caller FROM phone_calls WHERE duration <= 60) AND passport_number IN (SELECT passport_number FROM passengers JOIN flights ON flights.id = passengers.flight_id)
+-- Earliest flight tomorrow morning
+SELECT * FROM flights WHERE day = 29 AND month = 7
+-- | id | origin_airport_id | destination_airport_id | year | month | day | hour | minute |
+-- +----+-------------------+------------------------+------+-------+-----+------+--------+
+-- | 18 | 8                 | 6                      | 2021 | 7     | 29  | 16   | 0      |
+-- | 23 | 8                 | 11                     | 2021 | 7     | 29  | 12   | 15     |
+-- | 36 | 8                 | 4                      | 2021 | 7     | 29  | 8    | 20     |
+-- | 43 | 8                 | 1                      | 2021 | 7     | 29  | 9    | 30     |
+-- | 53 | 8                 | 9                      | 2021 | 7     | 29  | 15   | 20     |
+SELECT * FROM passengers WHERE flight_id = 36
+--  36        | 7214083635      | 2A   |
+-- | 36        | 1695452385      | 3B   |
+-- | 36        | 5773159633      | 4A   |
+-- | 36        | 1540955065      | 5C   |
+-- | 36        | 8294398571      | 6C   |
+-- | 36        | 1988161715      | 6D   |
+-- | 36        | 9878712108      | 7A   |
+-- | 36        | 8496433585      | 7B   |
+SELECT * FROM people LEFT JOIN bank_accounts ON people.id = bank_accounts.person_id LEFT JOIN atm_transactions ON bank_accounts.account_number = atm_transactions.account_number  WHERE atm_transactions.month = 7 AND atm_transactions.day = 28 AND atm_location = "Leggett Street" AND license_plate IN (SELECT license_plate FROM bakery_security_logs WHERE month = 7 AND day = 28 AND hour = 10) AND phone_number IN (SELECT caller FROM phone_calls WHERE duration <= 60) AND passport_number IN (SELECT passport_number FROM passengers WHERE flight_id = 36)
