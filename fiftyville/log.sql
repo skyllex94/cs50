@@ -131,4 +131,9 @@ SELECT * FROM passengers WHERE flight_id = 36
 -- | 36        | 1988161715      | 6D   |
 -- | 36        | 9878712108      | 7A   |
 -- | 36        | 8496433585      | 7B   |
-SELECT * FROM people LEFT JOIN bank_accounts ON people.id = bank_accounts.person_id LEFT JOIN atm_transactions ON bank_accounts.account_number = atm_transactions.account_number  WHERE atm_transactions.month = 7 AND atm_transactions.day = 28 AND atm_location = "Leggett Street" AND license_plate IN (SELECT license_plate FROM bakery_security_logs WHERE month = 7 AND day = 28 AND hour = 10) AND phone_number IN (SELECT caller FROM phone_calls WHERE duration <= 60) AND passport_number IN (SELECT passport_number FROM passengers WHERE flight_id = 36)
+-- Found the thief and it's BRUCE - he should be ashamed
+SELECT * FROM people LEFT JOIN bank_accounts ON people.id = bank_accounts.person_id LEFT JOIN atm_transactions ON bank_accounts.account_number = atm_transactions.account_number  WHERE atm_transactions.month = 7 AND atm_transactions.day = 28 AND atm_location = "Leggett Street" AND license_plate IN (SELECT license_plate FROM bakery_security_logs WHERE month = 7 AND day = 28 AND hour = 10 AND minute BETWEEN 10 AND 30) AND phone_number IN (SELECT caller FROM phone_calls WHERE duration <= 60) AND passport_number IN (SELECT passport_number FROM passengers WHERE flight_id = 36)
+-- | 686048 | Bruce  | (367) 555-5533 | 5773159633      | 94KL13X       | 49610011       | 686048    | 2010          | 267 | 49610011       | 2021 | 7     | 28  | Leggett Street | withdraw         | 50
+SELECT receiver FROM phone_calls WHERE month = 7 AND day = 28 AND duration < 60 AND caller = "(367) 555-5533"
+-- Find the other shmuck
+SELECT * FROM people WHERE phone_number = "(375) 555-8161" -- It's Robin
