@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <title>Trivia!</title>
+    <script>
+        // let answer = document.querySelector(".options").onClick;
+        // if (answer.querySelector(".correct")) {
+        //     answer.style.backgroundColor = "green";
+        // } else {
+        //     answer.style.backgroundColor = "red"
+        // }
+        function answer() {
+            let answer = document.querySelector('.correct');
+            answer.style.background = "green";
+        }
+
+        function incorrect() {
+            let wrong_answer = document.querySelector('.incorrect');
+            wrong_answer.style.background = "red";
+        }
+
+    </script>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Trivia!</h1>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>Part 1: Multiple Choice </h2>
+            <hr>
+            <!-- TODO: Add multiple choice question here -->
+            <h3>How many continents are there?</h3>
+            <div class="options">
+                <button onclick="incorrect()" class="incorrect">Three</button>
+                <button onclick="incorrect()" class="incorrect">Five</button>
+                <button onclick="answer()" class="correct">Seven</button>
+                <button onclick="incorrect()" class="incorrect">Nine</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Part 2: Free Response</h2>
+            <hr>
+            <!-- TODO: Add free response question here -->
+        </div>
+    </div>
+</body>
+
+</html>
