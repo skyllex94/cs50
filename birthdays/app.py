@@ -31,11 +31,15 @@ def index():
         month = request.form.get("month")
         day = request.form.get("day")
 
-        # if not name.value or month.value or day.value:
-        #     return redirect("failure.html")
-
-        db.execute(
-            "INSERT INTO birthdays (name, month, day) VALUES(?, ?, ?)", name, month, day)
+        id = request.form.get("id")
+        if id:
+            db.execute("DELETE FROM birthdays WHERE id = ?", id)
+            return redirect("/")
+        else:
+            # if not name.value or month.value or day.value:
+            #     return redirect("failure.html")
+            db.execute(
+                "INSERT INTO birthdays (name, month, day) VALUES(?, ?, ?)", name, month, day)
 
         return redirect("/")
 

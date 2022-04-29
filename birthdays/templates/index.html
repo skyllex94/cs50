@@ -41,7 +41,12 @@
                     <tr>
                         <td>{{ row.name }}</td>
                         <td>{{ row.month }}/{{ row.day }}</td>
-                        <td></td>
+                        <td>
+                            <form action="" method="post">
+                                <input name="id" type="hidden" value="{{ row.id }}">
+                                <input value="Delist" type="submit">
+                            </form>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
