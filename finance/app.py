@@ -50,7 +50,22 @@ def index():
 @login_required
 def buy():
     """Buy shares of stock"""
-    return apology("TODO")
+    if request.method == "POST":
+        if not request.form.get("symbol"):
+            return apology("Missing or incorrect ticker symbol")
+        elif not request.form.get("shares"):
+            return apology("Please input numbers of shares to buy")
+
+        symbol_lookup = lookup(request.form.get("symbol"))
+        shares = request.form.get("shares")
+        cur_user_cash = db.execute(
+            "SELECT cash FROM users WHERE id = ?", session["user_id"])
+
+        db.execute("CREATE TABLE purchases (user_id INT AUTOINCREMENT NOT NULL, username TEXT NOT NULL, shares NUMERIC NOT NULL, price_puchased NUMERIC NOT NULL, cash_left NUMERIC NOT NULL)")
+
+        db.execute("INSERT INTO purchases ")
+
+    return render_template("buy.html")
 
 
 @app.route("/history")
@@ -112,7 +127,15 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
-    return render_template("quote.html")
+    if request.method == "POST":
+
+        if not request.form.get("symbol"):
+            return apology("Please input a ticker symbol.", 405)
+        symbol_lookup = lookup(request.form.get("symbol"))
+
+        return render_template("quoted.html", symbol_lookup=symbol_lookup)
+    else:
+        return render_template("quote.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
