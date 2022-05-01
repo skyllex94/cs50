@@ -29,6 +29,9 @@ db = SQL("sqlite:///finance.db")
 if not os.environ.get("API_KEY"):
     raise RuntimeError("API_KEY not set")
 
+logged_username = ""
+logged_id = 0
+
 
 @app.after_request
 def after_request(response):
@@ -58,12 +61,26 @@ def buy():
 
         symbol_lookup = lookup(request.form.get("symbol"))
         shares = request.form.get("shares")
-        cur_user_cash = db.execute(
-            "SELECT cash FROM users WHERE id = ?", session["user_id"])
+        total_amount = float(symbol_lookup["price"]) * int(shares)
+        cash_left = db.execute(
+            ("SELECT cash FROM users WHERE id = ?", logged_id))
 
-        db.execute("CREATE TABLE purchases (user_id INT AUTOINCREMENT NOT NULL, username TEXT NOT NULL, shares NUMERIC NOT NULL, price_puchased NUMERIC NOT NULL, cash_left NUMERIC NOT NULL)")
+        return render_template("inquiry.html", symbol_lookup=symbol_lookup, shares=shares, total_amount=total_amount, cash_left=cash_left)
 
-        db.execute("INSERT INTO purchases ")
+    #     if (symbol_lookup.price == "None" or symbol_lookup.symbol == "None"):
+    #         return apology("Didn't find the ticker symbol")
+    #
+    #     # user_username = db.execute(
+    #     #     "SELECT username FROM users WHERE id = ?", session["user_id"])
+    #     # user_cash = db.execute(
+    #     #     "SELECT cash FROM users WHERE id = ?", session["user_id"])
+    #     # cash_left = user_cash - (shares * symbol_lookup.price)
+
+    #     # db.execute("CREATE TABLE purchases (user_id INT AUTOINCREMENT NOT NULL, username TEXT NOT NULL, shares NUMERIC NOT NULL, symbol TEXT NOT NULL, price_puchased NUMERIC NOT NULL, cash_left NUMERIC NOT NULL)")
+
+    #     # db.execute(
+    #     #     "INSERT INTO purchases (username, shares, symbol, price_purchased, cash_left) VALUES (?, ?, ?, ?, ?)", user_username, shares, symbol_lookup.symbol, symbol_lookup.price, cash_left)
+    #     return render_template("purchased.html", symbol_lookup=symbol_lookup)
 
     return render_template("buy.html")
 
@@ -81,6 +98,8 @@ def login():
 
     # Forget any user_id
     session.clear()
+    global logged_username
+    global logged_id
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -103,6 +122,8 @@ def login():
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
+        logged_id = rows[0]["id"]
+        logged_username = rows
 
         # Redirect user to home page
         return redirect("/")
