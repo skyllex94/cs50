@@ -48,7 +48,7 @@ def index():
         rows = db.execute(
             "SELECT * FROM purchases WHERE user_id = ?", int(session["user_id"]))
         stock_and_shares = db.execute(
-            "SELECT symbol, SUM(shares) AS shares FROM purchases GROUP BY symbol")
+            "SELECT type, symbol, SUM(shares) AS shares FROM purchases GROUP BY symbol")
         for row in stock_and_shares:
             symbol = row["symbol"]
             row["cur_price"] = lookup(symbol)["price"]
@@ -211,28 +211,24 @@ def sell():
         if symbol_lookup == None:
             return apology("Incorrect ticker symbol")
 
+        user_id = int(session["user_id"])
         shares = request.form.get("shares")
         total_amount = symbol_lookup["price"] * int(shares)
         time = date.today().strftime("%d/%m/%Y")
-        cash_left = db.execute(
-            "SELECT cash FROM users WHERE id = ?", int(session["user_id"]))
+        cash = db.execute(
+            "SELECT cash FROM users WHERE id = ?", user_id)
 
-        if len(cash_left) == 1:
-            cash_left = cash_left[0]["cash"]
-            
+        if len(cash) == 1:
+            cash = cash[0]["cash"]
+            cash_addup = "{:.2f}".format(cash + total_amount)
+            db.execute("UPDATE users SET cash = ? WHERE id = ?",
+                       cash_addup, user_id)
+            db.execute(
+                "INSERT INTO purchases (user_id, shares, symbol, price_purchased, cash_left, time_purchased, type) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                user_id, shares, symbol_lookup["symbol"], total_amount, cash_addup, time, False)
 
-            if total_amount <= cash_left:
-                cash_left = cash_left - total_amount
-                cash_left = "{:.2f}".format(cash_left)
-                db.execute("UPDATE users SET cash = ? WHERE id = ?",
-                           cash_left, int(session["user_id"]))
-                db.execute(
-                    "INSERT INTO purchases (user_id, shares, symbol, price_purchased, cash_left, time_purchased) VALUES (?, ?, ?, ?, ?, ?)", int(session["user_id"]), shares, symbol_lookup["symbol"], total_amount, cash_left, time)
-                return render_template("inquiry.html", symbol_lookup=symbol_lookup, shares=shares, total_amount=total_amount,
-                                       cash_left=cash_left, time=time)
-            else:
-                return apology("Insufficient funds")
-
+            return render_template("inquiry.html", symbol_lookup=symbol_lookup, shares=shares, total_amount=total_amount,
+                                   cash_left=cash_addup, time=time)
 
     else:
         return render_template("sell.html")
