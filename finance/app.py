@@ -5,6 +5,7 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import date
 
 from helpers import apology, login_required, lookup, usd
 
@@ -26,11 +27,8 @@ Session(app)
 db = SQL("sqlite:///finance.db")
 
 # Make sure API key is set
-if not os.environ.get("API_KEY"):
-    raise RuntimeError("API_KEY not set")
-
-logged_username = ""
-logged_id = 0
+# if not os.environ.get("API_KEY"):
+#     raise RuntimeError("API_KEY not set")
 
 
 @app.after_request
@@ -46,7 +44,13 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+    try:
+        rows = db.execute(
+            "SELECT * FROM purchases WHERE user_id = ?", int(session["user_id"]))
+        return render_template("index.html", rows=rows)
+
+    except:
+        return apology("Unable to load recent purchases")
 
 
 @app.route("/buy", methods=["GET", "POST"])
@@ -55,55 +59,53 @@ def buy():
     """Buy shares of stock"""
     if request.method == "POST":
         if not request.form.get("symbol"):
-            return apology("Missing or incorrect ticker symbol")
+            return apology("Please input a ticker symbol")
         elif not request.form.get("shares"):
             return apology("Please input numbers of shares to buy")
 
+        # Check if the symbol inputted is valid and then proceed
         symbol_lookup = lookup(request.form.get("symbol"))
+        if symbol_lookup == None:
+            return apology("Incorrect ticker symbol")
         shares = request.form.get("shares")
-        total_amount = float(symbol_lookup["price"]) * int(shares)
+        total_amount = symbol_lookup["price"] * int(shares)
+        time = date.today().strftime("%d/%m/%Y")
         cash_left = db.execute(
-            ("SELECT cash FROM users WHERE id = ?", logged_id))
+            "SELECT cash FROM users WHERE id = ?", int(session["user_id"]))
 
-        return render_template("inquiry.html", symbol_lookup=symbol_lookup, shares=shares, total_amount=total_amount, cash_left=cash_left)
-
-    #     if (symbol_lookup.price == "None" or symbol_lookup.symbol == "None"):
-    #         return apology("Didn't find the ticker symbol")
-    #
-    #     # user_username = db.execute(
-    #     #     "SELECT username FROM users WHERE id = ?", session["user_id"])
-    #     # user_cash = db.execute(
-    #     #     "SELECT cash FROM users WHERE id = ?", session["user_id"])
-    #     # cash_left = user_cash - (shares * symbol_lookup.price)
-
-    #     # db.execute("CREATE TABLE purchases (user_id INT AUTOINCREMENT NOT NULL, username TEXT NOT NULL, shares NUMERIC NOT NULL, symbol TEXT NOT NULL, price_puchased NUMERIC NOT NULL, cash_left NUMERIC NOT NULL)")
-
-    #     # db.execute(
-    #     #     "INSERT INTO purchases (username, shares, symbol, price_purchased, cash_left) VALUES (?, ?, ?, ?, ?)", user_username, shares, symbol_lookup.symbol, symbol_lookup.price, cash_left)
-    #     return render_template("purchased.html", symbol_lookup=symbol_lookup)
+        if len(cash_left) == 1:
+            cash_left = cash_left[0]["cash"]
+            if total_amount <= cash_left:
+                cash_left = cash_left - total_amount
+                cash_left = "{:.2f}".format(cash_left)
+                db.execute("UPDATE users SET cash = ? WHERE id = ?",
+                           cash_left, int(session["user_id"]))
+                db.execute(
+                    "INSERT INTO purchases (user_id, shares, symbol, price_purchased, cash_left, time_purchased) VALUES (?, ?, ?, ?, ?, ?)", int(session["user_id"]), shares, symbol_lookup["symbol"], total_amount, cash_left, time)
+                return render_template("inquiry.html", symbol_lookup=symbol_lookup, shares=shares, total_amount=total_amount,
+                                       cash_left=cash_left, time=time)
+            else:
+                return apology("Insufficient funds")
 
     return render_template("buy.html")
 
 
-@app.route("/history")
-@login_required
+@ app.route("/history")
+@ login_required
 def history():
     """Show history of transactions"""
     return apology("TODO")
 
 
-@app.route("/login", methods=["GET", "POST"])
+@ app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
 
     # Forget any user_id
     session.clear()
-    global logged_username
-    global logged_id
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-
         # Ensure username was submitted
         if not request.form.get("username"):
             return apology("must provide username", 403)
@@ -112,6 +114,7 @@ def login():
         elif not request.form.get("password"):
             return apology("must provide password", 403)
 
+        username = request.form.get("username")
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = ?",
                           request.form.get("username"))
@@ -122,8 +125,6 @@ def login():
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
-        logged_id = rows[0]["id"]
-        logged_username = rows
 
         # Redirect user to home page
         return redirect("/")
@@ -133,7 +134,7 @@ def login():
         return render_template("login.html")
 
 
-@app.route("/logout")
+@ app.route("/logout")
 def logout():
     """Log user out"""
 
@@ -144,22 +145,24 @@ def logout():
     return redirect("/")
 
 
-@app.route("/quote", methods=["GET", "POST"])
-@login_required
+@ app.route("/quote", methods=["GET", "POST"])
+@ login_required
 def quote():
     """Get stock quote."""
     if request.method == "POST":
 
         if not request.form.get("symbol"):
-            return apology("Please input a ticker symbol.", 405)
+            return apology("Please input a ticker symbol", 405)
         symbol_lookup = lookup(request.form.get("symbol"))
+        if symbol_lookup == None:
+            return apology("Incorrect ticker symbol")
 
         return render_template("quoted.html", symbol_lookup=symbol_lookup)
     else:
         return render_template("quote.html")
 
 
-@app.route("/register", methods=["GET", "POST"])
+@ app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
     if request.method == "POST":
@@ -181,8 +184,8 @@ def register():
     return render_template("register.html")
 
 
-@app.route("/sell", methods=["GET", "POST"])
-@login_required
+@ app.route("/sell", methods=["GET", "POST"])
+@ login_required
 def sell():
     """Sell shares of stock"""
     return apology("TODO")
