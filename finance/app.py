@@ -47,7 +47,14 @@ def index():
     try:
         rows = db.execute(
             "SELECT * FROM purchases WHERE user_id = ?", int(session["user_id"]))
-        return render_template("index.html", rows=rows)
+        stock_and_shares = db.execute(
+            "SELECT symbol, SUM(shares) AS shares FROM purchases GROUP BY symbol")
+        for row in stock_and_shares:
+            symbol = row["symbol"]
+            row["cur_price"] = lookup(symbol)["price"]
+            # row[symbol] = lookup(symbol)["name"]
+
+        return render_template("index.html", rows=rows, stock_and_shares=stock_and_shares)
 
     except:
         return apology("Unable to load recent purchases")
@@ -94,7 +101,13 @@ def buy():
 @ login_required
 def history():
     """Show history of transactions"""
-    return apology("TODO")
+    try:
+        rows = db.execute(
+            "SELECT * FROM purchases WHERE user_id = ?", int(session["user_id"]))
+        return render_template("history.html", rows=rows)
+
+    except:
+        return apology("Unable to load recent purchases")
 
 
 @ app.route("/login", methods=["GET", "POST"])
@@ -114,7 +127,6 @@ def login():
         elif not request.form.get("password"):
             return apology("must provide password", 403)
 
-        username = request.form.get("username")
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = ?",
                           request.form.get("username"))
@@ -188,4 +200,39 @@ def register():
 @ login_required
 def sell():
     """Sell shares of stock"""
-    return apology("TODO")
+    if request.method == "POST":
+        if not request.form.get("symbol"):
+            return apology("Please input a ticker symbol")
+        elif not request.form.get("shares"):
+            return apology("Please input numbers of shares to sell")
+
+        # Check if the symbol inputted is valid and then proceed
+        symbol_lookup = lookup(request.form.get("symbol"))
+        if symbol_lookup == None:
+            return apology("Incorrect ticker symbol")
+
+        shares = request.form.get("shares")
+        total_amount = symbol_lookup["price"] * int(shares)
+        time = date.today().strftime("%d/%m/%Y")
+        cash_left = db.execute(
+            "SELECT cash FROM users WHERE id = ?", int(session["user_id"]))
+
+        if len(cash_left) == 1:
+            cash_left = cash_left[0]["cash"]
+            
+
+            if total_amount <= cash_left:
+                cash_left = cash_left - total_amount
+                cash_left = "{:.2f}".format(cash_left)
+                db.execute("UPDATE users SET cash = ? WHERE id = ?",
+                           cash_left, int(session["user_id"]))
+                db.execute(
+                    "INSERT INTO purchases (user_id, shares, symbol, price_purchased, cash_left, time_purchased) VALUES (?, ?, ?, ?, ?, ?)", int(session["user_id"]), shares, symbol_lookup["symbol"], total_amount, cash_left, time)
+                return render_template("inquiry.html", symbol_lookup=symbol_lookup, shares=shares, total_amount=total_amount,
+                                       cash_left=cash_left, time=time)
+            else:
+                return apology("Insufficient funds")
+
+
+    else:
+        return render_template("sell.html")
