@@ -46,22 +46,30 @@ def index():
     """Show portfolio of stocks"""
     try:
         user_id = int(session["user_id"])
-        rows = db.execute(
-            "SELECT * FROM purchases WHERE user_id = ?", user_id)
-        stock_and_shares = db.execute(
-            "SELECT type, symbol, SUM(shares) AS shares FROM purchases GROUP BY symbol")
-        shares_total = 0.00
-        for row in stock_and_shares:
-            symbol = row["symbol"]
-            row["cur_price"] = lookup(symbol)["price"]
-            shares_total = shares_total + float(row["cur_price"])
-            # row[symbol] = lookup(symbol)["name"]
+        # rows = db.execute(
+        #     "SELECT * FROM purchases WHERE user_id = ?", user_id)
+        # stock_and_shares = db.execute(
+        #     "SELECT type, symbol, SUM(shares) AS shares FROM purchases GROUP BY symbol")
+        # shares_total = 0.00
+        # for row in stock_and_shares:
+        #     symbol = row["symbol"]
+        #     row["cur_price"] = lookup(symbol)["price"]
+        #     shares_total = shares_total + float(row["cur_price"])
+        # row[symbol] = lookup(symbol)["name"]
+
+        positions = db.execute(
+            "SELECT * FROM positions WHERE user_id = ?", user_id)
+
+        total_price = 0
+        for row in positions:
+            price = float("{:.2f}".format(row["total_price"]))
+            total_price += price
 
         cash = db.execute("SELECT cash FROM users WHERE id = ?", user_id)
         if len(cash) == 1:
             cash = cash[0]
 
-        return render_template("index.html", rows=rows, stock_and_shares=stock_and_shares, cash=cash, shares_total=shares_total)
+            return render_template("index.html", positions=positions, cash=cash, total_price=total_price)
 
     except:
         return apology("Unable to load recent purchases")
@@ -96,33 +104,34 @@ def buy():
                 cash_left = cash_left - total_amount
                 cash_left = float("{:.2f}".format(cash_left))
                 total_amount = float("{:.2f}".format(total_amount))
+                symbol = symbol_lookup["symbol"]
 
-                # Adjusst the cash of the user after the purchase
+                # Adjust the cash of the user after the purchase
                 db.execute("UPDATE users SET cash = ? WHERE id = ?",
                            cash_left, user_id)
 
                 # Insert and maniputale the "positions" database
                 stock_check = db.execute(
-                    "SELECT symbol FROM positions WHERE symbol = ?", symbol_lookup["symbol"])
+                    "SELECT symbol FROM positions WHERE symbol = ?", symbol)
                 if len(stock_check) == 0:
                     db.execute("INSERT INTO positions (user_id, symbol, shares, total_price) VALUES (?, ?, ?, ?)",
-                               user_id, symbol_lookup["symbol"], shares, total_amount)
+                               user_id, symbol, shares, total_amount)
                 else:
                     cur_shares = db.execute(
-                        "SELECT shares FROM positions WHERE symbol = ?", symbol_lookup["symbol"])
+                        "SELECT shares FROM positions WHERE symbol = ?", symbol)
                     db.execute(
-                        "UPDATE positions SET shares = ? WHERE symbol = ?", (cur_shares[0]["shares"] + int(shares)), symbol_lookup["symbol"])
+                        "UPDATE positions SET shares = ? WHERE symbol = ?", (cur_shares[0]["shares"] + int(shares)), symbol)
                     cur_pricetotal = db.execute(
-                        "SELECT total_price FROM positions WHERE symbol = ?", symbol_lookup["symbol"])
+                        "SELECT total_price FROM positions WHERE symbol = ?", symbol)
 
                     cur_price = float("{:.2f}".format(
                         cur_pricetotal[0]["total_price"]))
                     db.execute("UPDATE positions SET total_price = ? WHERE symbol = ?",
-                               (cur_price + total_amount), symbol_lookup["symbol"])
+                               (cur_price + total_amount), symbol)
 
                 # Insert and maniputale the "purchases" database responsible for the history of transactions
-                db.execute("INSERT INTO purchases(user_id, shares, symbol, price_purchased, cash_left, time_purchased) VALUES(?, ?, ?, ?, ?, ?)",
-                           user_id, shares, symbol_lookup["symbol"], total_amount, cash_left, time)
+                db.execute("INSERT INTO purchases(user_id, shares, symbol, price_purchased, cash_left, time_purchased, type) VALUES(?, ?, ?, ?, ?, ?, ?)",
+                           user_id, shares, symbol, total_amount, cash_left, time, 1)
 
                 return render_template("inquiry.html", symbol_lookup=symbol_lookup, shares=shares, total_amount=total_amount, cash_left=cash_left, time=time)
             else:
