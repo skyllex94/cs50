@@ -104,8 +104,11 @@ def buy():
         symbol_lookup = lookup(request.form.get("symbol"))
 
         # Check if input value is not negative, fractional of alphabetical
-        shares = float(request.form.get("shares"))
-        shares = round(shares)
+        shares = request.form.get("shares")
+        dot = "."
+        if dot in shares:
+            return apology("Please input a whole number", 400)
+        shares = int(shares)
         if shares < 0 or isinstance(shares, float) == True:
             return apology("Invalid number of shares", 400)
 
@@ -299,8 +302,12 @@ def sell():
             return apology("Incorrect ticker symbol", 400)
 
         # Check for a positive integer for shares
-        shares = int(request.form.get("shares"))
-        if shares < 0 or isinstance(shares, float) == True or shares.isalpha():
+        shares = request.form.get("shares")
+        dot = "."
+        if dot in shares:
+            return apology("Please input a whole number", 400)
+        shares = int(shares)
+        if shares < 0 or isinstance(shares, float) == True:
             return apology("Invalid number of shares", 400)
 
         price = float("{:.2f}".format(symbol_lookup["price"]))
