@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
-{% block title %}Purchased{% endblock%}
+{% block title %}Portfolio{% endblock%}
+{% block username %}{{ username }}{% endblock%}
 
 {% block main %}
 
@@ -11,7 +12,8 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Stock</th>
+                        <th>Name</th>
+                        <th>Symbol</th>
                         <th>Shares</th>
                         <th>Current Price</th>
                         <th>Total Amount</th>
@@ -20,10 +22,11 @@
                 <tbody>
                     {% for row in positions %}
                     <tr>
+                        <td>{{ row.name }}</td>
                         <td>{{ row.symbol }}</td>
                         <td>{{ row.shares }}</td>
-                        <td>{{ row.total_price }}</td>
-                        <td>{{ '%0.2f'| format(((row.shares * row.total_price))|float) }}</td>
+                        <td>${{ '%0.2f'| format(((row.cur_price))|float) }}</td>
+                        <td>${{ '%0.2f'| format(((row.total_price))|float) }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -31,14 +34,16 @@
                     <tr>
                         <td></td>
                         <td></td>
+                        <td></td>
                         <td>Cash</td>
-                        <td>{{ '%0.2f'| format((cash.cash)|float) }}</td>
+                        <td>${{ '%0.2f'| format((cash.cash)|float) }}</td>
                     </tr>
                     <tr>
                         <td></td>
                         <td></td>
+                        <td></td>
                         <td>TOTAL</td>
-                        <td>{{'%0.2f'| format((cash.cash + total_price)|float) }}</td>
+                        <td>${{'%0.2f'| format((cash.cash + total_price)|float) }}</td>
                     </tr>
                 </tfoot>
             </table>

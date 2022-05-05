@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
-{% block title %}Purchased{% endblock%}
+{% block title %}History{% endblock%}
+{% block username %}{{ username }}{% endblock%}
 
 {% block main %}
 
@@ -23,12 +24,12 @@
                     <tr>
                         <td>{{ row.symbol }}</td>
                         <td>{{ row.shares }}</td>
-                        <td>{{ row.price_purchased }}</td>
+                        <td>${{ row.price_purchased }}</td>
                         <td>{{ row.time_purchased }}</td>
                         {% if row.type == 0 %}
-                            <td>Sold</td>
+                        <td>Sold</td>
                         {% else %}
-                            <td>Bought</td>
+                        <td>Bought</td>
                         {% endif %}
                     </tr>
                     {% endfor %}

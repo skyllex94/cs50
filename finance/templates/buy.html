@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}Quotes{% endblock%}
+{% block username %}{{ username }}{% endblock%}
 
 {% block main %}
 
@@ -11,7 +12,7 @@
                 placeholder="Ticker Symbol to Search" type="text">
         </div>
         <div class="col-md-2 mb-3">
-            <input class="form-control mx-auto w-100" name="shares" placeholder="Number of Shares" type="number">
+            <input class="form-control mx-auto w-100" name="shares" placeholder="Number of Shares">
         </div>
         <div class="col-md-2 mb-3">
             <button class="btn btn-outline-dark w-100" type="submit">Buy</button>
