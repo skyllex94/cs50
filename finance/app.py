@@ -6,6 +6,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import date
+import re
 
 from helpers import apology, login_required, lookup, usd
 
@@ -95,23 +96,37 @@ def buy():
 
     if request.method == "POST":
         if not request.form.get("symbol"):
-            return apology("Please input a ticker symbol")
+            return apology("Please input a ticker symbol", 400)
         elif not request.form.get("shares"):
-            return apology("Please input numbers of shares to buy")
+            return apology("Please input numbers of shares to buy", 400)
 
         # Check if the symbol inputted is valid and then proceed
         user_id = int(session["user_id"])
-        symbol_lookup = lookup(request.form.get("symbol"))
+        symbol_check = request.form.get("symbol")
+        shares = request.form.get("shares")
+
+        if not symbol_check.isalpha():
+            return apology("Enter only Alphabetical Character, please", 400)
+        symbol_lookup = lookup(symbol_check)
 
         # Check if input value is not negative, fractional of alphabetical
-        shares = request.form.get("shares")
+        if shares.isalpha():
+            return apology("Enter only numbers for shares, please", 400)
+
         dot = "."
         if dot in shares:
             return apology("Please input a whole number", 400)
+        for letter in shares:
+            if letter.isalpha():
+                return apology("Please only numbers for the shares", 400)
+
+        shares = re.sub(r'[^\w]', '', shares)
+
         shares = int(shares)
         if shares < 0 or isinstance(shares, float) == True:
             return apology("Invalid number of shares", 400)
 
+        # Check for successful API connection and return of a symbol
         if symbol_lookup == None:
             return apology("Incorrect ticker symbol", 400)
 
@@ -159,7 +174,7 @@ def buy():
 
                 return render_template("inquiry.html", symbol_lookup=symbol_lookup, shares=shares, total_amount=total_amount, cash_left=cash_left, time=time, username=username)
             else:
-                return apology("Insufficient funds")
+                return render_template("buy.html", invalid=True, error_msg=usd(shares))
 
     return render_template("buy.html", username=username)
 
@@ -241,7 +256,14 @@ def quote():
     if request.method == "POST":
         if not request.form.get("symbol"):
             return apology("Please input a ticker symbol", 400)
-        symbol_lookup = lookup(request.form.get("symbol"))
+
+        # Check if symbol is alphabetical
+        symbol_check = request.form.get("symbol")
+        if not symbol_check.isalpha():
+            return apology("Enter only Alphabetical Character, please")
+
+        symbol_lookup = lookup(symbol_check)
+        # symbol = symbol_lookup["symbol"]
         if symbol_lookup == None:
             return apology("Incorrect ticker symbol")
 
