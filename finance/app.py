@@ -110,20 +110,12 @@ def buy():
         symbol_lookup = lookup(symbol_check)
 
         # Check if input value is not negative, fractional of alphabetical
-        if shares.isalpha():
-            return apology("Enter only numbers for shares, please", 400)
-        dot = "."
-        fraction = "/"
-        if dot in shares:
-            return apology("Please input a whole number", 400)
-        if fraction in shares:
+        if (bool(re.match('^[0-9]*$', shares)) == False):
             return apology("Please only whole numbers for shares", 400)
-
-        shares = re.sub(r'[^\w]', '', shares)
-
-        shares = int(shares)
-        if shares < 0:
-            return apology("Invalid number of shares", 400)
+        else:
+            shares = int(shares)
+            if shares < 0:
+                return apology("Invalid number of shares", 400)
 
         # Check for successful API connection and return of a symbol
         if symbol_lookup == None:
@@ -324,12 +316,14 @@ def sell():
 
         # Check for a positive integer for shares
         shares = request.form.get("shares")
-        dot = "."
-        if dot in shares:
-            return apology("Please input a whole number", 400)
-        shares = int(shares)
-        if shares < 0 or isinstance(shares, float) == True:
-            return apology("Invalid number of shares", 400)
+
+        # Check if input value is not negative, fractional of alphabetical
+        if (bool(re.match('^[0-9]*$', shares)) == False):
+            return apology("Please only whole numbers for shares", 400)
+        else:
+            shares = int(shares)
+            if shares < 0:
+                return apology("Invalid number of shares", 400)
 
         price = float("{:.2f}".format(symbol_lookup["price"]))
         total_amount = price * shares
