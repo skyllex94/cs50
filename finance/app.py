@@ -112,18 +112,17 @@ def buy():
         # Check if input value is not negative, fractional of alphabetical
         if shares.isalpha():
             return apology("Enter only numbers for shares, please", 400)
-
         dot = "."
+        fraction = "/"
         if dot in shares:
             return apology("Please input a whole number", 400)
-        for letter in shares:
-            if letter.isalpha():
-                return apology("Please only numbers for the shares", 400)
+        if fraction in shares:
+            return apology("Please only whole numbers for shares", 400)
 
         shares = re.sub(r'[^\w]', '', shares)
 
         shares = int(shares)
-        if shares < 0 or isinstance(shares, float) == True:
+        if shares < 0:
             return apology("Invalid number of shares", 400)
 
         # Check for successful API connection and return of a symbol
@@ -313,13 +312,13 @@ def sell():
 
     if request.method == "POST":
         # Check if fields are populated
-        if not request.form.get("select-group"):
+        if not request.form.get("symbol"):
             return apology("Please input a ticker symbol")
         elif not request.form.get("shares"):
             return apology("Please input numbers of shares to sell")
 
         # Check if the symbol inputted is valid and then proceed
-        symbol_lookup = lookup(request.form.get("select-group"))
+        symbol_lookup = lookup(request.form.get("symbol"))
         if symbol_lookup == None:
             return apology("Incorrect ticker symbol", 400)
 
@@ -383,7 +382,7 @@ def sell():
                                        cash_left=cash_addup, time=time, username=username)
 
         else:
-            return apology("Error with transaction occured", 406)
+            return apology("Error with transaction occured", 400)
 
     else:
         return render_template("sell.html", positions=positions, username=username)
