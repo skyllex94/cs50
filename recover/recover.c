@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+typedef uint8_t BYTE;
 
 int main(int argc, char *argv[])
 {
@@ -11,34 +12,39 @@ int main(int argc, char *argv[])
 
         FILE *file = fopen(argv[1], "r");
         int block_size = 512;
-        uint8_t buffer[block_size];
-        char *filename = NULL;
+        unsigned char buffer[block_size];
+
+        char *filename = malloc(8 * sizeof(char));
+        int image_counter = 0;
+
+        FILE *img = NULL;
+        // bool img_found = false;
 
         if (file == NULL)
         {
             return 1;
         }
 
-        while (fread(buffer, sizeof(uint8_t), block_size, file) == block_size)
+        while (fread(buffer, sizeof(char), block_size, file))
         {
             if (buffer[0] == 0xff && buffer[1] == 0xd8 && buffer[2] == 0xff && (buffer[3] & 0xf0) == 0xe0)
             {
-                // printf("%c", buffer);
-                sprintf(filename, "%03i.jpg", 2);
+                sprintf(filename, "%03i.jpg", image_counter);
+                image_counter++;
 
-                // Open file to write the jpg data into
-                uint8_t data[block_size];
-
-                FILE *img = fopen(filename, "w");
-                while (fwrite(data, sizeof(uint8_t), block_size, img) == block_size)
-                {
-                }
+                img = fopen(filename, "w");
             }
-            else
+
+            if (img != NULL)
             {
-                return 1;
+                fwrite(buffer, sizeof(char), block_size, img);
             }
         }
+        free(filename);
+        fclose(img);
+        fclose(file);
+
+        return 0;
     }
     else
     {
